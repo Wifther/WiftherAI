@@ -1,0 +1,8 @@
+[project]
+name = "Wifther.AI"
+version = "0.1.0"
+authors = ["Jenik"]
+description = "Specialized AI bug tracker written in SIC"
+mode = "normal"
+
+[dependencies]

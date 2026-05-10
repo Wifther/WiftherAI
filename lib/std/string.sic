@@ -1,0 +1,63 @@
+// Heap-allocated String implementation for SIC standard library
+// Provides growable, UTF-8-compatible string operations
+
+extern "C" {
+    fn malloc(size: u64) -> *void;
+    fn free(ptr: *void);
+    fn realloc(ptr: *void, size: u64) -> *void;
+    fn strlen(s: *void) -> u64;
+    fn memcpy(dest: *void, src: *void, n: u64) -> *void;
+}
+
+// Create a new empty String buffer with 16-byte initial capacity
+fn string_new() -> *void {
+    let data = malloc(16);
+    data
+}
+
+// Create a SIC string from a C-style string pointer (*u8 or *char)
+fn string_from(c_str: *void) -> *void {
+    let len = strlen(c_str);
+    let buf = malloc(len + 1);
+    memcpy(buf, c_str, len);
+    buf
+}
+
+// Allocate a String buffer for a string of given byte length
+fn string_alloc(len: u64) -> *void {
+    let data = malloc(len + 1);
+    data
+}
+
+// High-level concatenation of two SIC strings
+fn string_concat(a: *void, b: *void) -> *void {
+    let len_a = strlen(a);
+    let len_b = strlen(b);
+    let new_buf = malloc(len_a + len_b + 1);
+    memcpy(new_buf, a, len_a);
+    memcpy(new_buf + len_a, b, len_b);
+    new_buf
+}
+
+// Low-level concatenation: allocate new buffer of combined length
+fn string_concat_alloc(a_len: u64, b_len: u64) -> *void {
+    let total = a_len + b_len + 1;
+    let data = malloc(total);
+    data
+}
+
+// Grow a String buffer to new_cap bytes
+fn string_grow(s: *void, new_cap: u64) -> *void {
+    let new_data = realloc(s, new_cap);
+    new_data
+}
+
+// Free a String's buffer
+fn string_free(s: *void) {
+    free(s);
+}
+
+// Check if two string lengths are equal
+fn string_len_eq(a_len: u64, b_len: u64) -> bool {
+    a_len == b_len
+}

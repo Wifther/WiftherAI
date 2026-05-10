@@ -1,0 +1,64 @@
+// File I/O for SIC standard library
+// Thin wrapper over C stdio functions for cross-platform file access
+
+extern "C" {
+    fn fopen(path: *void, mode: *void) -> *void;
+    fn fclose(fp: *void) -> int;
+    fn fread(buf: *void, size: u64, count: u64, fp: *void) -> u64;
+    fn fwrite(buf: *void, size: u64, count: u64, fp: *void) -> u64;
+    fn fseek(fp: *void, offset: int, whence: int) -> int;
+    fn ftell(fp: *void) -> int;
+    fn feof(fp: *void) -> int;
+    fn ferror(fp: *void) -> int;
+}
+
+// Open a file; mode is "r", "w", "a", "rb", "wb", etc.
+// Returns file handle (*void) or null on failure
+fn fs_open(path: *void, mode: *void) -> *void {
+    let fp = fopen(path, mode);
+    fp
+}
+
+// Close a file handle; returns 0 on success
+fn fs_close(fp: *void) -> int {
+    let result = fclose(fp);
+    result
+}
+
+// Read up to count elements of size bytes each into buf
+// Returns number of elements actually read
+fn fs_read(buf: *void, size: u64, count: u64, fp: *void) -> u64 {
+    let n = fread(buf, size, count, fp);
+    n
+}
+
+// Write count elements of size bytes each from buf
+// Returns number of elements actually written
+fn fs_write(buf: *void, size: u64, count: u64, fp: *void) -> u64 {
+    let n = fwrite(buf, size, count, fp);
+    n
+}
+
+// Seek to offset bytes from whence (0=start, 1=current, 2=end)
+fn fs_seek(fp: *void, offset: int, whence: int) -> int {
+    let result = fseek(fp, offset, whence);
+    result
+}
+
+// Return current file position
+fn fs_tell(fp: *void) -> int {
+    let pos = ftell(fp);
+    pos
+}
+
+// Return non-zero if end-of-file reached
+fn fs_eof(fp: *void) -> int {
+    let result = feof(fp);
+    result
+}
+
+// Return non-zero if file error occurred
+fn fs_error(fp: *void) -> int {
+    let result = ferror(fp);
+    result
+}

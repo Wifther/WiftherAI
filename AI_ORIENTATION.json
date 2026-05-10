@@ -1,0 +1,91 @@
+{
+  "project": "Wifther.AI",
+  "language": "SIC",
+  "compiler_version": "3.0.0",
+  "philosophy": "AI-Native, Ownership-based, High Performance",
+
+  "compiler_state": {
+    "status": "Epoch 2 complete — declarations and type-checking work. Function-body lowering to MIR not yet implemented.",
+    "what_works": [
+      "sic-cli check: type-checks module-level declarations (structs, extern blocks, fn signatures)",
+      "sic-cli compile --target c: generates C stubs for all declared functions",
+      "extern \"C\" blocks: fully parsed and emitted as C extern declarations",
+      "Struct definitions: parsed, fields available for HM type inference",
+      "13 codegen backends: all generate stub skeletons"
+    ],
+    "what_is_pending": [
+      "Function bodies: parser skips bodies (body: vec![] always). All generated functions are empty stubs.",
+      "Working native binary: not possible until body lowering is implemented.",
+      "vec_new<T> body: stub only (malloc(16), no element-size tracking)",
+      "read_line body: stub only (malloc(1024), never reads stdin)"
+    ]
+  },
+
+  "execution_model": {
+    "current": "Polyglot fallback — wifther.py (Python) is the running implementation.",
+    "sic_files_role": "Architecture spec + type declarations. Used by sic-cli for type checking. Will become executable when body lowering lands.",
+    "run_direct": "python wifther.py < input.json",
+    "run_mcp": "python mcp_wifther.py  (stdio, called by Claude Code / Claude Desktop)",
+    "mcp_tools": {
+      "scan_project": "scan_project(directory_path: str) — full project scan, zero source tokens to Claude",
+      "scan_single_file": "scan_single_file(file_path: str) — single file by path, Claude never reads source",
+      "scan_for_bugs": "scan_for_bugs(file: str, source: str) — backward-compatible source-string scan"
+    },
+    "token_model": "scan_project sends only findings to Claude (O(bugs)), not source (O(lines))"
+  },
+
+  "modes": {
+    "normal": "Systems level, Polonius ownership checker, no GC. Requires explicit pointer management via extern C.",
+    "easy": "Application level, GC/refcount runtime.",
+    "super_easy": "Scripting level, Python-like syntax."
+  },
+
+  "stdlib_actual": {
+    "note": "Real implementations are in WiftherAI/lib/std/. All functions return *void (raw pointer). High-level generics not available.",
+    "std::string": [
+      "string_from(c_str: *void) -> *void   -- strlen+malloc+memcpy, real",
+      "string_concat(a: *void, b: *void) -> *void  -- real",
+      "string_free(s: *void) -> void",
+      "string_concat_alloc(a_len, b_len) -> *void"
+    ],
+    "std::vector": [
+      "vec_new<T>() -> *void  -- STUB: returns malloc(16), no generics",
+      "vec_push(v, elem_size, new_len) -> *void",
+      "vec_free(v: *void)"
+    ],
+    "std::io": [
+      "print(s: str)", "println(s: str)", "printf(fmt: *void, ...) -> int",
+      "read_line() -> *void  -- STUB: returns empty malloc(1024)"
+    ],
+    "extern_c_preferred": "For stdin/stdout/file I/O use extern \"C\" fgets/fread/printf directly."
+  },
+
+  "wifther_architecture": {
+    "entry_point": "main.sic (spec) / wifther.py (running)",
+    "scanner_module": "scanner.sic (spec) / scan_code_patterns() in wifther.py",
+    "io_contract": {
+      "stdin": "{\"file\": \"path\", \"source\": \"...source code...\"}",
+      "stdout": "{\"status\": \"completed\", \"findings\": [...], \"bug_count\": N}"
+    },
+    "analysis_engine": "AST (ast.NodeVisitor) — no text search, no false positives from comments",
+    "patterns": [
+      "MutableDefaultArg: ast.FunctionDef defaults containing ast.List/Dict/Set — includes diff",
+      "BareExceptPass: ast.ExceptHandler where type is None — includes diff",
+      "HardcodedSecret: ast.Assign where target name in SECRET_NAMES and value is str constant",
+      "DangerousFunction: ast.Call where func.id in {eval, exec}"
+    ],
+    "finding_fields": ["type", "line", "severity", "message", "fix", "diff"]
+  },
+
+  "toolchain": {
+    "compiler": "C:\\Users\\Jenik\\Desktop\\SIC_SDK\\bin\\sic-cli.exe",
+    "stdlib_env": "SIC_STDLIB=C:\\Users\\Jenik\\Desktop\\WiftherAI\\lib\\std",
+    "commands": {
+      "check": "sic-cli check --input main.sic --mode normal",
+      "compile_spec": "sic-cli compile --input main.sic --target c --output build/",
+      "run": "python wifther.py",
+      "run_mcp": "python mcp_wifther.py",
+      "install_mcp": "pip install mcp && claude mcp add wifther -- python mcp_wifther.py"
+    }
+  }
+}

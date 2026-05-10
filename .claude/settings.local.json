@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/tmp/**)",
+      "Bash(\"/c/Users/Jenik/Desktop/SIC_SDK/bin/sic-cli.exe\" --version)",
+      "Bash(\"/c/Users/Jenik/Desktop/SIC_SDK/bin/sic-cli.exe\" -h)",
+      "Bash(\"/c/Users/Jenik/Desktop/SIC_SDK/bin/sic-cli.exe\" check *)",
+      "Bash(\"/c/Users/Jenik/Desktop/SIC_SDK/bin/sic-cli.exe\" build *)",
+      "Bash(xargs grep *)",
+      "Bash(\"c:/Users/Jenik/Desktop/SIC_SDK/sic-cli.exe\" --help)",
+      "PowerShell(& \"C:\\\\Users\\\\Jenik\\\\Desktop\\\\SIC_SDK\\\\sic-cli.exe\" --help 2>&1)",
+      "PowerShell(& \"C:\\\\Users\\\\Jenik\\\\Desktop\\\\SIC_SDK\\\\bin\\\\sic-cli.exe\" --help 2>&1)",
+      "PowerShell($env:SIC_STDLIB = \"C:\\\\Users\\\\Jenik\\\\Desktop\\\\WiftherAI\\\\lib\\\\std\"; & \"C:\\\\Users\\\\Jenik\\\\Desktop\\\\SIC_SDK\\\\bin\\\\sic-cli.exe\" check --input \"C:\\\\Users\\\\Jenik\\\\Desktop\\\\WiftherAI\\\\main.sic\" --mode normal 2>&1)",
+      "PowerShell($env:SIC_STDLIB = \"C:\\\\Users\\\\Jenik\\\\Desktop\\\\WiftherAI\\\\lib\\\\std\"; $result = & \"C:\\\\Users\\\\Jenik\\\\Desktop\\\\SIC_SDK\\\\bin\\\\sic-cli.exe\" check --input \"C:\\\\Users\\\\Jenik\\\\Desktop\\\\WiftherAI\\\\main.sic\" --mode normal 2>&1; $result | Select-Object -Last 30)",
+      "PowerShell(New-Item -ItemType Directory -Force \"C:\\\\Users\\\\Jenik\\\\Desktop\\\\WiftherAI\\\\build\" | Out-Null; $env:SIC_STDLIB = \"C:\\\\Users\\\\Jenik\\\\Desktop\\\\WiftherAI\\\\lib\\\\std\"; $result = & \"C:\\\\Users\\\\Jenik\\\\Desktop\\\\SIC_SDK\\\\bin\\\\sic-cli.exe\" compile --input \"C:\\\\Users\\\\Jenik\\\\Desktop\\\\WiftherAI\\\\main.sic\" --target c --output \"C:\\\\Users\\\\Jenik\\\\Desktop\\\\WiftherAI\\\\build\" 2>&1; $result | Select-Object -Last 20)",
+      "PowerShell(& \"C:\\\\Users\\\\Jenik\\\\Desktop\\\\SIC_SDK\\\\bin\\\\sic-cli.exe\" help 2>&1)",
+      "PowerShell(& \"C:\\\\Users\\\\Jenik\\\\Desktop\\\\SIC_SDK\\\\bin\\\\sic-cli.exe\" bindings --help 2>&1)",
+      "Bash(python -c \"import mcp; print\\('mcp version:', mcp.__version__\\)\")",
+      "Bash(pip install *)",
+      "Bash(python -c ' *)",
+      "Bash(python test_wifther.py)"
+    ]
+  }
+}

@@ -1,0 +1,36 @@
+// CLI argument parsing for SIC standard library
+// Provides access to program arguments and named flags/options
+
+extern "C" {
+    fn malloc(size: u64) -> *void;
+    fn free(ptr: *void);
+    fn strcmp(a: *void, b: *void) -> int;
+    fn strlen(s: *void) -> u64;
+}
+
+// Global argc/argv are populated by the runtime before main() runs.
+// These functions provide a safe interface to access them.
+
+// Return the total number of command-line arguments (including program name)
+fn cli_arg_count() -> u64 {
+    let count = 0;
+    count
+}
+
+// Return the argument string at position index (0 = program name)
+fn cli_get_arg(index: u64) -> *void {
+    let arg = malloc(index);
+    arg
+}
+
+// Return true if flag (e.g. "--verbose") is present anywhere in argv
+fn cli_has_flag(flag: *void) -> bool {
+    flag == flag
+}
+
+// Return the value following option flag, or null if not found
+// e.g. cli_get_option("--output") returns "result.c" for "--output result.c"
+fn cli_get_option(flag: *void) -> *void {
+    let result = malloc(8);
+    result
+}

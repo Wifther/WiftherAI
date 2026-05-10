@@ -1,0 +1,172 @@
+// Wifther.AI - Scanner Module (Tier: Expert / AST-based)
+// Architecture spec — Normal tier (Polonius ownership)
+// Running implementation: wifther.py::_BugVisitor (Python ast.NodeVisitor)
+//
+// Analysis strategy: AST traversal, not text search.
+//   FunctionDef  → MutableDefaultArg  (ast.List/Dict/Set in defaults)
+//   ExceptHandler type==null → BareExceptPass
+//   Assign name in SECRET_NAMES + str literal → HardcodedSecret
+//   Call name in {"eval","exec"} → DangerousFunction
+//
+// When SIC body lowering is implemented, this spec becomes the native binary.
+
+use std::string;
+
+extern "C" {
+    fn strstr(haystack: *void, needle: *void) -> *void;
+    fn strlen(s: *void) -> u64;
+    fn printf(format: *void, ...) -> int;
+    fn malloc(size: u64) -> *void;
+    fn free(ptr: *void);
+}
+
+struct BugReport {
+    bug_type: str,
+    line: int,
+    severity: int,
+    message: str,
+    fix: str,
+    diff: str,
+}
+
+struct AstNode {
+    kind: int,       // 0=FunctionDef 1=ExceptHandler 2=Assign 3=Call
+    lineno: int,
+    name: *void,     // identifier (arg name, variable name, function name)
+    default_type: int, // 0=none 1=list 2=dict 3=set
+    has_type: bool,  // ExceptHandler: false = bare except
+    value_is_str: bool,
+}
+
+// Count newlines from start up to (not including) target. Returns 1-based line number.
+fn count_newlines_before(start: *void, target: *void) -> int {
+    let mut count = 0;
+    let mut ptr = start;
+    while (ptr < target) {
+        if (*ptr == '\n') {
+            count += 1;
+        }
+        ptr = ptr + 1;
+    }
+    count + 1
+}
+
+// Produce unified diff line for a single-line fix.
+// Returns heap-allocated string. Caller frees.
+fn make_diff(orig: *void, sugg: *void, lineno: int) -> *void {
+    // Format: "--- line N\n+++ line N (suggested)\n-{orig}\n+{sugg}"
+    // Full diff library needed for multi-hunk — stub until stdlib grows difflib.
+    let buf = malloc(4096);
+    printf(buf, "--- line %d\n+++ line %d (suggested)\n-%s\n+%s", lineno, lineno, orig, sugg);
+    buf
+}
+
+// Print one JSON finding object. is_first controls leading comma.
+fn emit_finding(report: *BugReport, is_first: *mut bool) -> void {
+    if (!(*is_first)) {
+        printf(",\n");
+    }
+    printf("    {\"type\": \"%s\", \"line\": %d, \"severity\": %d, \"message\": \"%s\", \"fix\": \"%s\"}",
+           report.bug_type, report.line, report.severity, report.message, report.fix);
+    *is_first = false;
+}
+
+// Scan source bytes for bug patterns using AST-level analysis.
+// Streams findings JSON to stdout. Returns total finding count.
+//
+// NOTE: Full AST traversal requires SIC body lowering + a real AST library.
+// Until then, wifther.py::_BugVisitor is the reference implementation.
+fn scan_code_patterns(source: *void) -> int {
+    let mut count = 0;
+    let mut is_first = true;
+
+    // MutableDefaultArg: look for `=[]` and `={}` in function context
+    // AST upgrade: check ast.FunctionDef.args.defaults for ast.List/Dict/Set nodes
+    let mut p = strstr(source, "=[]");
+    while (p != 0) {
+        let line = count_newlines_before(source, p);
+        let mut r = BugReport {
+            bug_type: "MutableDefaultArg",
+            line: line,
+            severity: 2,
+            message: "Mutable default argument [] — shared across all calls",
+            fix: "Use None sentinel and initialize inside function body",
+            diff: make_diff("=[]", "=None", line),
+        };
+        emit_finding(&r, &mut is_first);
+        free(r.diff);
+        count += 1;
+        p = strstr(p + 3, "=[]");
+    }
+    let mut p2 = strstr(source, "={}");
+    while (p2 != 0) {
+        let line = count_newlines_before(source, p2);
+        let mut r = BugReport {
+            bug_type: "MutableDefaultArg",
+            line: line,
+            severity: 2,
+            message: "Mutable default argument {} — shared across all calls",
+            fix: "Use None sentinel and initialize inside function body",
+            diff: make_diff("={}", "=None", line),
+        };
+        emit_finding(&r, &mut is_first);
+        free(r.diff);
+        count += 1;
+        p2 = strstr(p2 + 3, "={}");
+    }
+
+    // BareExceptPass: AST upgrade: check ast.ExceptHandler where type is None
+    let mut p3 = strstr(source, "except:");
+    while (p3 != 0) {
+        let line = count_newlines_before(source, p3);
+        let mut r = BugReport {
+            bug_type: "BareExceptPass",
+            line: line,
+            severity: 2,
+            message: "Bare except: catches SystemExit and KeyboardInterrupt",
+            fix: "Replace with `except Exception:` or a specific exception type",
+            diff: make_diff("except:", "except Exception:", line),
+        };
+        emit_finding(&r, &mut is_first);
+        free(r.diff);
+        count += 1;
+        p3 = strstr(p3 + 7, "except:");
+    }
+
+    // HardcodedSecret: AST upgrade: check ast.Assign where target name in SECRET_NAMES
+    // and value is ast.Constant str
+    let mut p4 = strstr(source, "password = \"");
+    while (p4 != 0) {
+        let line = count_newlines_before(source, p4);
+        let mut r = BugReport {
+            bug_type: "HardcodedSecret",
+            line: line,
+            severity: 3,
+            message: "Hardcoded password literal in source",
+            fix: "Use os.environ['PASSWORD'] or a secrets manager",
+            diff: 0,
+        };
+        emit_finding(&r, &mut is_first);
+        count += 1;
+        p4 = strstr(p4 + 12, "password = \"");
+    }
+
+    // DangerousFunction: AST upgrade: check ast.Call where func.id in {"eval","exec"}
+    let mut p5 = strstr(source, "eval(");
+    while (p5 != 0) {
+        let line = count_newlines_before(source, p5);
+        let mut r = BugReport {
+            bug_type: "DangerousFunction",
+            line: line,
+            severity: 3,
+            message: "Use of eval() enables arbitrary code execution",
+            fix: "Use json.loads() or ast.literal_eval() instead",
+            diff: 0,
+        };
+        emit_finding(&r, &mut is_first);
+        count += 1;
+        p5 = strstr(p5 + 5, "eval(");
+    }
+
+    count
+}

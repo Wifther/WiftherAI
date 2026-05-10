@@ -1,0 +1,31 @@
+{
+  "project": "Wifther.AI",
+  "version": "0.1.0",
+  "architecture": {
+    "entry_point": "main.sic",
+    "modules": {
+      "scanner": {
+        "path": "scanner.sic",
+        "tier": "Normal",
+        "responsibility": "AST traversal, pattern matching, data-flow analysis",
+        "complexity": "High (O(n) linear scanning)"
+      },
+      "router": {
+        "path": "main.sic",
+        "tier": "Easy",
+        "responsibility": "JSON I/O, routing, error handling",
+        "complexity": "Low"
+      }
+    },
+    "data_flow": {
+      "input": "stdin (JSON AST)",
+      "output": "stdout (JSON Bug Report)",
+      "internal": "Vector of BugReport structs"
+    }
+  },
+  "definitions": {
+    "BugReport": {
+      "fields": ["type", "file", "line", "severity", "message"]
+    }
+  }
+}

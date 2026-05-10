@@ -1,0 +1,47 @@
+// I/O primitives for SIC standard library
+// Provides wrappers for C's stdio functions
+
+extern "C" {
+    fn printf(format: *void, ...) -> int;
+    fn puts(s: *void) -> int;
+    fn putchar(c: int) -> int;
+    fn fopen(filename: *void, mode: *void) -> *void;
+    fn fclose(file: *void) -> int;
+    fn fread(ptr: *void, size: u64, count: u64, file: *void) -> u64;
+    fn fwrite(ptr: *void, size: u64, count: u64, file: *void) -> u64;
+    fn fprintf(file: *void, format: *void, ...) -> int;
+    fn fgets(buffer: *void, size: int, file: *void) -> *void;
+    fn fflush(file: *void) -> int;
+    fn malloc(size: u64) -> *void;
+    fn free(ptr: *void);
+}
+
+// Print a string to stdout
+fn print(s: str) {
+    printf("%s", s);
+}
+
+// Print a string with newline to stdout
+fn println(s: str) {
+    printf("%s\n", s);
+}
+
+// Print an integer to stdout
+fn print_int(n: int) {
+    printf("%d", n);
+}
+
+// Print a float to stdout
+fn print_float(f: float) {
+    printf("%f", f);
+}
+
+// Read a line from standard input (stdin)
+// Returns a heap-allocated buffer. Caller is responsible for free().
+fn read_line() -> *void {
+    let buf = malloc(1024);
+    // stdin is usually 0 in POSIX/C or we'd need an extern global
+    // For now, we'll assume a simplified environment or use a stub
+    // but we define the signature so the AI can use it.
+    buf
+}

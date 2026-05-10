@@ -1,0 +1,33 @@
+// Memory allocation primitives for SIC standard library
+// Provides safe wrappers around C's malloc/free
+
+extern "C" {
+    fn malloc(size: u64) -> *void;
+    fn free(ptr: *void);
+    fn calloc(num: u64, size: u64) -> *void;
+    fn realloc(ptr: *void, size: u64) -> *void;
+}
+
+// Allocate memory of given size in bytes
+// Returns a pointer to the allocated memory, or null on failure
+fn allocate(size: u64) -> *void {
+    let ptr = malloc(size);
+    ptr
+}
+
+// Allocate zero-initialized memory
+fn allocate_zeroed(num: u64, size: u64) -> *void {
+    let ptr = calloc(num, size);
+    ptr
+}
+
+// Reallocate memory to a new size
+fn reallocate(ptr: *void, size: u64) -> *void {
+    let new_ptr = realloc(ptr, size);
+    new_ptr
+}
+
+// Free previously allocated memory
+fn deallocate(ptr: *void) {
+    free(ptr);
+}

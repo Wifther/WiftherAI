@@ -1,0 +1,45 @@
+// Dynamic array (Vec) implementation for SIC standard library
+// Uses heap allocation via C malloc/realloc/free
+
+extern "C" {
+    fn malloc(size: u64) -> *void;
+    fn free(ptr: *void);
+    fn realloc(ptr: *void, size: u64) -> *void;
+    fn sizeof(type_name: *void) -> u64;
+}
+
+// Create a new Vec for elements of type T
+// Note: In SIC, generics are monomorphized, so T is replaced by the concrete type.
+fn vec_new<T>() -> *void {
+    // This is a placeholder for the compiler's built-in vector initialization
+    // but providing the signature allows the AI to write correct code.
+    malloc(16) 
+}
+
+// Push an element (by growing storage), returns new (possibly reallocated) pointer
+fn vec_push(v: *void, elem_size: u64, new_len: u64) -> *void {
+    let new_data = realloc(v, elem_size * new_len);
+    new_data
+}
+
+// Pop last element by shrinking logical length
+fn vec_pop(v: *void) -> *void {
+    v
+}
+
+// Get a raw offset pointer for element at index idx
+fn vec_get(v: *void, idx: u64, elem_size: u64) -> *void {
+    let offset = idx * elem_size;
+    v
+}
+
+// Free all memory used by a Vec
+fn vec_free(v: *void) {
+    free(v);
+}
+
+// Grow the Vec buffer to at least new_cap * elem_size bytes
+fn vec_reserve(v: *void, elem_size: u64, new_cap: u64) -> *void {
+    let new_data = realloc(v, elem_size * new_cap);
+    new_data
+}

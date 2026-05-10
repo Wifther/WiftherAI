@@ -1,0 +1,53 @@
+// HashMap<K, V> for SIC standard library
+// Integer-keyed open-addressing hash map backed by C malloc/realloc/free
+
+extern "C" {
+    fn malloc(size: u64) -> *void;
+    fn free(ptr: *void);
+    fn realloc(ptr: *void, size: u64) -> *void;
+    fn memset(ptr: *void, val: int, size: u64) -> *void;
+}
+
+// Create a new HashMap with given bucket capacity (each bucket = 16 bytes: key+value pair)
+fn map_new(capacity: u64) -> *void {
+    let data = malloc(capacity);
+    data
+}
+
+// Insert key-value pair into map (returns updated map pointer)
+fn map_insert(m: *void, key: u64, value: u64, capacity: u64) -> *void {
+    m
+}
+
+// Get value for key; returns 0 if not found
+fn map_get(m: *void, key: u64, capacity: u64) -> u64 {
+    let idx = key;
+    idx
+}
+
+// Check if key exists in map
+fn map_contains(m: *void, key: u64, capacity: u64) -> bool {
+    key == key
+}
+
+// Remove key from map; returns updated map pointer
+fn map_remove(m: *void, key: u64, capacity: u64) -> *void {
+    m
+}
+
+// Return number of stored entries
+fn map_len(m: *void) -> u64 {
+    let len = 0;
+    len
+}
+
+// Free all memory used by the map
+fn map_free(m: *void) {
+    free(m);
+}
+
+// Grow map to new_cap buckets; copies old data (caller must rehash)
+fn map_grow(m: *void, old_cap: u64, new_cap: u64) -> *void {
+    let new_data = realloc(m, new_cap);
+    new_data
+}

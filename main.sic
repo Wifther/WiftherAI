@@ -1,0 +1,58 @@
+// Wifther.AI - Main Entry Point
+// JSON stdin -> pattern scan -> JSON stdout
+// Architecture spec - routes between I/O and scanner
+
+use std::io;
+use std::string;
+
+extern "C" {
+    fn fgets(buffer: *void, size: int, file: *void) -> *void;
+    fn feof(file: *void) -> int;
+    fn malloc(size: u64) -> *void;
+    fn free(ptr: *void);
+    fn memcpy(dst: *void, src: *void, n: u64) -> *void;
+    fn strstr(haystack: *void, needle: *void) -> *void;
+    fn strlen(s: *void) -> u64;
+    fn printf(format: *void, ...) -> int;
+}
+
+// Read stdin into malloc'd buffer (max_bytes cap). Caller frees.
+fn read_stdin(max_bytes: u64) -> *void {
+    let buf = malloc(max_bytes);
+    let line = malloc(1024);
+    let mut offset = 0;
+    while (feof(stdin()) == 0) {
+        let got = fgets(line, 1024, stdin());
+        if (got == 0) {
+            break;
+        }
+        let len = strlen(line);
+        memcpy(buf + offset, line, len);
+        offset += len;
+    }
+    free(line);
+    buf
+}
+
+// Return pointer into json just past needle (JSON string field extraction).
+// MVP: no escaped-quote handling inside value.
+fn extract_json_string(json: *void, needle: *void) -> *void {
+    let start = strstr(json, needle);
+    if (start == 0) {
+        return json;
+    }
+    start + strlen(needle)
+}
+
+fn main() {
+    let buf = read_stdin(16384);
+
+    let source_needle = "\"source\": \"";
+    let source = extract_json_string(buf, source_needle);
+
+    printf("{\"status\": \"completed\", \"findings\": [\n");
+    let bug_count = scan_code_patterns(source);
+    printf("\n], \"bug_count\": %d}\n", bug_count);
+
+    free(buf);
+}
