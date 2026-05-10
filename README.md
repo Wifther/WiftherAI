@@ -1,146 +1,67 @@
-# Wifther.AI — Bug Scanner MCP Server
+# Wifther.AI — Expert AST Bug Scanner (MCP)
 
-## English
+Wifther.AI is a high-performance, locally-hosted bug scanning engine designed to integrate seamlessly with **Claude Code** and **Claude Desktop** via the Model Context Protocol (MCP).
 
-### What is Wifther.AI?
+## 🚀 Why Wifther.AI?
 
-Wifther.AI is a local, offline bug scanner that detects common code anti-patterns. It runs as an MCP server, exposing a `scan_for_bugs` tool directly inside Claude Code and Claude Desktop.
-
-**Detected patterns:**
-- `MutableDefaultArg` — `def f(x=[])` or `def f(x={})` shared across all calls
-- `BareExceptPass` — bare `except:` catching `SystemExit` and `KeyboardInterrupt`
-- `HardcodedSecret` — `password = "..."` or `api_key = "..."` literals in source
-
-**Architecture:**
-- `wifther.py` — core scan logic (Python polyglot fallback, all patterns here)
-- `mcp_wifther.py` — MCP server wrapping wifther.py
-- `main.sic` / `scanner.sic` — SIC architecture spec (becomes native binary when SIC body lowering is implemented)
-
-### Requirements
-
-- Python 3.10+
-- `mcp` package: `pip install mcp`
-
-### Install
-
-Run `install.bat` or manually:
-
-```bat
-pip install mcp
-```
-
-### Add to Claude Code
-
-```bat
-claude mcp add wifther -- python C:\Users\Jenik\Desktop\WiftherAI\mcp_wifther.py
-```
-
-Verify it's registered:
-
-```bat
-claude mcp list
-```
-
-### Add to Claude Desktop
-
-Open `%APPDATA%\Claude\claude_desktop_config.json` and add:
-
-```json
-{
-  "mcpServers": {
-    "wifther": {
-      "command": "python",
-      "args": ["C:\\Users\\Jenik\\Desktop\\WiftherAI\\mcp_wifther.py"]
-    }
-  }
-}
-```
-
-Restart Claude Desktop after saving.
-
-### Usage in Claude
-
-Once installed, ask Claude:
-
-> "Scan this Python code for bugs: `def process(items=[]): ...`"
-
-Claude will call `scan_for_bugs` automatically and return findings.
-
-### Run Tests
-
-```bat
-python test_wifther.py
-```
-
-Expected: 7/7 tests pass.
+*   **Zero-Token Scanning**: Unlike traditional AI prompts, Wifther scans your files locally. It only sends findings to Claude, saving up to 99% of your context window and tokens.
+*   **AST Intelligence**: Uses Abstract Syntax Tree (AST) analysis to understand code structure. No false positives from comments or strings.
+*   **Smart Recommendations**: Every bug found comes with a specific fix and a Unified Diff that Claude can apply instantly.
+*   **SIC-Native Architecture**: Built according to the SIC programming language specifications, ready for native machine-code execution.
 
 ---
 
-## Česky
+## 🔍 Detected Patterns
 
-### Co je Wifther.AI?
+- **MutableDefaultArg**: Detects `def f(x=[])` patterns that cause shared state bugs.
+- **BareExceptPass**: Finds dangerous `except:` blocks that hide critical system errors.
+- **HardcodedSecret**: Identifies passwords and API keys in source code.
+- **DangerousFunction**: Flags `eval()` and `exec()` usage.
 
-Wifther.AI je lokální, offline skener chyb, který detekuje běžné anti-vzory v kódu. Běží jako MCP server a zpřístupňuje nástroj `scan_for_bugs` přímo v Claude Code a Claude Desktop.
+---
 
-**Detekované vzory:**
-- `MutableDefaultArg` — `def f(x=[])` nebo `def f(x={})` — sdílený objekt napříč všemi voláními
-- `BareExceptPass` — holý `except:` zachytávající i `SystemExit` a `KeyboardInterrupt`
-- `HardcodedSecret` — `password = "..."` nebo `api_key = "..."` literály ve zdrojovém kódu
+## 🛠 Installation
 
-### Požadavky
+### 1. Quick Install (Windows)
+Run the `install.bat` file. It will install the necessary dependencies and show you the exact command to link Wifther to Claude.
 
-- Python 3.10+
-- Balíček `mcp`: `pip install mcp`
-
-### Instalace
-
-Spusť `install.bat` nebo ručně:
-
-```bat
+### 2. Manual Setup
+```bash
 pip install mcp
 ```
 
-### Přidání do Claude Code
-
-```bat
-claude mcp add wifther -- python C:\Users\Jenik\Desktop\WiftherAI\mcp_wifther.py
+### 3. Add to Claude Code
+Run this command in your terminal:
+```bash
+claude mcp add wifther -- python "C:/PATH/TO/YOUR/WiftherAI/mcp_wifther.py"
 ```
 
-Ověření registrace:
-
-```bat
-claude mcp list
-```
-
-### Přidání do Claude Desktop
-
-Otevři `%APPDATA%\Claude\claude_desktop_config.json` a přidej:
-
+### 4. Add to Claude Desktop
+Add this to your `%APPDATA%\Claude\claude_desktop_config.json`:
 ```json
 {
   "mcpServers": {
     "wifther": {
       "command": "python",
-      "args": ["C:\\Users\\Jenik\\Desktop\\WiftherAI\\mcp_wifther.py"]
+      "args": ["C:/PATH/TO/YOUR/WiftherAI/mcp_wifther.py"]
     }
   }
 }
 ```
 
-Po uložení restartuj Claude Desktop.
+---
 
-### Použití v Claudovi
+## 🏗 Architecture
 
-Po instalaci řekni Claudovi:
+Wifther.AI follows a **Cloud-Local Hybrid** model:
+- **Specification**: Written in **SIC lang** (`main.sic`, `scanner.sic`) for maximum safety and performance.
+- **Engine**: Currently powered by a high-speed Python AST fallback to ensure compatibility while the SIC compiler matures.
 
-> "Proskenuj tento Python kód pro chyby: `def process(items=[]): ...`"
+---
 
-Claude automaticky zavolá `scan_for_bugs` a vrátí nálezy.
+## 📄 License
+This project is open-source. Feel free to contribute!
 
-### Spuštění testů
+---
 
-```bat
-python test_wifther.py
-```
-
-Očekáváno: 7/7 testů projde.
+*(Česky: Wifther.AI je lokální skener chyb pro Claude Code, který šetří tokeny tím, že kód analyzuje přímo u vás na stroji pomocí AST analýzy.)*
